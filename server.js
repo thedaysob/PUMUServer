@@ -13,11 +13,7 @@ app.all("/*", function(req, res, next){
 });
 
 const cors = require('cors');
-const corsOptions = {
-	origin: 'http://localhost:4200/',
-	optionSucessStatus: 200
-}
-app.use(cors(corsOptions));
+app.use(cors());
 
 const mongo = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
@@ -33,19 +29,20 @@ var database, collection;
 app.get("/Locations", (req, res) => {
 	collection.find({}).toArray((error, result) => {
 		if (error) {
-			return response.status(500).send(error);
+			return res.status(500).send(error);
 		}
-		reponse.send(result);
+		res.send(JSON.stringify(result));
 	});
 });
 
 app.post("/Locations", (req, res) => {
 	console.log("posting");
-	collection.insert(req.body, (error, result) => {
+	collection.insertOne(req.body, (error, result) => {
 		if (error) {
 			return res.status(500).send(error);
 		}
-		res.send('Successful');
+
+		res.send(JSON.stringify({ status:"Successful" }));
 	})
 })
 
@@ -55,7 +52,6 @@ app.listen(3000, () => {
 		console.log("Connection Successful");
 
 		database = db.db("PickUpDatabase");
-		console.log(database);
 		console.log("Database created PickUpDatabase");
 
 		database.createCollection('Locations',  function(err, collection) {
