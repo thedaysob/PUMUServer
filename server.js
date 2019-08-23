@@ -5,6 +5,20 @@ var app = express();
 app.use(BodyParser.json());
 app.use(BodyParser.urlencoded({ extended: true }));
 
+app.all("/*", function(req, res, next){
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+  next();
+});
+
+const cors = require('cors');
+const corsOptions = {
+	origin: 'http://localhost:4200/',
+	optionSucessStatus: 200
+}
+app.use(cors(corsOptions));
+
 const mongo = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://Daeseob:trackie400@pickupmeetup-b0afy.mongodb.net/test?retryWrites=true&w=majority";
@@ -25,12 +39,13 @@ app.get("/Locations", (req, res) => {
 	});
 });
 
-app.post("/Location", (req, res) => {
+app.post("/Locations", (req, res) => {
+	console.log("posting");
 	collection.insert(req.body, (error, result) => {
 		if (error) {
-			return response.status(500).send(error);
+			return res.status(500).send(error);
 		}
-		response.send(result.result);
+		res.send('Successful');
 	})
 })
 
@@ -40,11 +55,13 @@ app.listen(3000, () => {
 		console.log("Connection Successful");
 
 		database = db.db("PickUpDatabase");
+		console.log(database);
 		console.log("Database created PickUpDatabase");
 
-		collection = database.createCollection('Locations',  function(err, collection) {
+		database.createCollection('Locations',  function(err, collection) {
 			if (err) throw err;
 			console.log("Collection created");
 		});
+		collection = database.collection("Locations");
 	});
 });
