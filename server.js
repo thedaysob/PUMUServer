@@ -48,9 +48,34 @@ app.post("/Locations", (req, res) => {
 app.put("/Locations/:gameID", async (req, res) => {
 	console.log("putting");
 	const requestID = req.params.id;
+	console.log("here");
+	console.log(req.body.pickUpInfo.numOfPlayers);
+	let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) + 1;
+	console.log(newNum);
+	console.log("there");
+	// let requestedLocation = await collection.findOne({ gameId : requestID });
+	// console.log(requestedLocation);
+	// let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) + 1;
+	// console.log(newNum);
 
-	await collection.updateOne({ gameID : requestID }, { pickUpInfo : req.body});
-	res.send(JSON.stringify({ status:"Putting Successful"}));
+	// await collection.findOneAndUpdate({ gameID : requestID }, { $inc: {"numOfPlayers" : 5} });
+
+	// requestedLocation = await collection.findOne({ gameId : requestID });
+	// console.log(requestedLocation);
+
+	try {
+		let doc = await collection.findOneAndUpdate(
+			{ "gameId" : requestID },
+			{ $set : { "pickUpInfo.numOfPlayers" : newNum.toString() } },
+			{ upsert:true, returnNewDocument : true } );
+		res.send({ status:"Putting Successful" });
+	}
+	catch (e){
+		res.send({status:e});
+		console.log(e);
+	}
+	// await collection.updateOne({ gameID : requestID }, { pickUpInfo : req.body});
+	// res.send(JSON.stringify({ status:"Putting Successful"}));
 
 	// let Location = collection.filter(Location => {
 	// 	return Location.gameID == requestID;
