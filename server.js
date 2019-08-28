@@ -41,9 +41,31 @@ app.post("/Locations", (req, res) => {
 		if (error) {
 			return res.status(500).send(error);
 		}
+		res.send(JSON.stringify({ status:"Posting Successful" }));
+	});
+})
 
-		res.send(JSON.stringify({ status:"Successful" }));
-	})
+app.put("/Locations/:gameID", async (req, res) => {
+	console.log("putting");
+	const requestID = req.params.id;
+
+	await collection.updateOne({ gameID : requestID }, { pickUpInfo : req.body});
+	res.send(JSON.stringify({ status:"Putting Successful"}));
+
+	// let Location = collection.filter(Location => {
+	// 	return Location.gameID == requestID;
+	// })[0];
+
+	// const index = collection.indexOf(Location);
+	// const keys = Object.keys(req.body);
+
+	// keys.forEach(key => {
+	// 	Location[key] = req.body[key];
+	// });
+
+	// collection[index] = Location;
+
+	// res.send(JSON.stringify(Locations[index]));
 })
 
 app.listen(3000, () => {
