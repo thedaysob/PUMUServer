@@ -24,74 +24,7 @@ const client = new MongoClient(uri, {
 	useUnifiedTopology: true
 });
 
-var database, collection;
-
-app.get("/Locations", (req, res) => {
-	collection.find({}).toArray((error, result) => {
-		if (error) {
-			return res.status(500).send(error);
-		}
-		res.send(JSON.stringify(result));
-	});
-});
-
-app.post("/Locations", (req, res) => {
-	console.log("posting");
-	collection.insertOne(req.body, (error, result) => {
-		if (error) {
-			return res.status(500).send(error);
-		}
-		res.send(JSON.stringify({ status:"Posting Successful" }));
-	});
-})
-
-app.put("/Locations/:gameID", async (req, res) => {
-	console.log("putting");
-	const requestID = req.params.id;
-	console.log("here");
-	console.log(req.body.pickUpInfo.numOfPlayers);
-	let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) + 1;
-	console.log(newNum);
-	console.log("there");
-	// let requestedLocation = await collection.findOne({ gameId : requestID });
-	// console.log(requestedLocation);
-	// let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) + 1;
-	// console.log(newNum);
-
-	// await collection.findOneAndUpdate({ gameID : requestID }, { $inc: {"numOfPlayers" : 5} });
-
-	// requestedLocation = await collection.findOne({ gameId : requestID });
-	// console.log(requestedLocation);
-
-	try {
-		let doc = await collection.findOneAndUpdate(
-			{ "gameId" : requestID },
-			{ $set : { "pickUpInfo.numOfPlayers" : newNum.toString() } },
-			{ upsert:true, returnNewDocument : true } );
-		res.send({ status:"Putting Successful" });
-	}
-	catch (e){
-		res.send({status:e});
-		console.log(e);
-	}
-	// await collection.updateOne({ gameID : requestID }, { pickUpInfo : req.body});
-	// res.send(JSON.stringify({ status:"Putting Successful"}));
-
-	// let Location = collection.filter(Location => {
-	// 	return Location.gameID == requestID;
-	// })[0];
-
-	// const index = collection.indexOf(Location);
-	// const keys = Object.keys(req.body);
-
-	// keys.forEach(key => {
-	// 	Location[key] = req.body[key];
-	// });
-
-	// collection[index] = Location;
-
-	// res.send(JSON.stringify(Locations[index]));
-})
+var database, locations, users;
 
 app.listen(3000, () => {
 	client.connect(function(err, db) {
@@ -103,8 +36,84 @@ app.listen(3000, () => {
 
 		database.createCollection('Locations',  function(err, collection) {
 			if (err) throw err;
-			console.log("Collection created");
+			console.log("Location collection created");
 		});
-		collection = database.collection("Locations");
+		database.createCollection('Users', function(err, collection) {
+			if (err) throw err;
+			console.log("Users collection created");
+		})
+		
+		locations = database.collection("Locations");
+		users = database.collection("Users");
 	});
 });
+
+// Locations API
+app.get("/Locations", (req, res) => {
+	locations.find({}).toArray((error, result) => {
+		if (error) {
+			return res.status(500).send(error);
+		}
+		res.send(JSON.stringify(result));
+	});
+});
+
+app.post("/Locations", (req, res) => {
+	console.log("posting");
+	locations.insertOne(req.body, (error, result) => {
+		if (error) {
+			return res.status(500).send(error);
+		}
+		res.send(JSON.stringify({ status:"Posting Successful" }));
+	});
+})
+
+app.put("/join/Locations/:gameID", async (req, res) => {
+	console.log("putting");
+	const requestID = req.params.id;
+	let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) + 1;
+
+	try {
+		let doc = await locations.findOneAndUpdate(
+			{ "gameId" : requestID },
+			{ $set : { "pickUpInfo.numOfPlayers" : newNum.toString() } },
+			{ upsert:true, returnNewDocument : true } );
+		res.send({ status:"Putting Successful" });
+	}
+	catch (e){
+		res.send({status:e});
+		console.log(e);
+	}
+})
+
+app.put("/leave/Locations/:gameID", async (req, res) => {
+	console.log("putting");
+	const requestID = req.params.id;
+	let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) - 1;
+
+	try {
+		let doc = await locations.findOneAndUpdate(
+			{ "gameId" : requestID },
+			{ $set : { "pickUpInfo.numOfPlayers" : newNum.toString() } },
+			{ upsert:true, returnNewDocument : true } );
+		res.send({ status:"Putting Successful" });
+	}
+	catch (e){
+		res.send({status:e});
+		console.log(e);
+	}
+})
+
+// Users API
+app.get("/Users/:userID", async (req, res)=> {
+	console.log("getting user" + req.body.username);
+})
+
+app.post("/Users", (req, res)=> {
+	users.inserOne(req.body, (error, result)=> {
+		if (error) {
+			return res.status(500).send(error);
+		}
+		res.send(JSON.stringify({ status:"New user posting successful" }));
+	});
+})
