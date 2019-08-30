@@ -74,7 +74,7 @@ app.put("/join/Locations/:gameID", async (req, res) => {
 	let newNum = parseInt(req.body.pickUpInfo.numOfPlayers) + 1;
 
 	try {
-		let doc = await locations.findOneAndUpdate(
+		await locations.findOneAndUpdate(
 			{ "gameId" : requestID },
 			{ $set : { "pickUpInfo.numOfPlayers" : newNum.toString() } },
 			{ upsert:true, returnNewDocument : true } );
@@ -105,12 +105,16 @@ app.put("/leave/Locations/:gameID", async (req, res) => {
 })
 
 // Users API
-app.get("/Users/:userID", async (req, res)=> {
-	console.log("getting user" + req.body.username);
+app.get("/Users", async (req, res)=> {
+	const username = req.query.username;
+	console.log("password " + req.query.password);
+	console.log("getting user " + username);
+	let user = await users.findOne({ username:req.query.username }, { password:req.query.password });
+	res.send(user);
 })
 
 app.post("/Users", (req, res)=> {
-	users.inserOne(req.body, (error, result)=> {
+	users.insertOne(req.body, (error, result)=> {
 		if (error) {
 			return res.status(500).send(error);
 		}
