@@ -110,7 +110,12 @@ app.get("/Users", async (req, res)=> {
 	console.log("password " + req.query.password);
 	console.log("getting user " + username);
 	let user = await users.findOne({ username:req.query.username }, { password:req.query.password });
-	res.send(user);
+
+	if (user != null) {
+		res.send(user.userInfo);
+	} else {
+		res.send(JSON.stringify({ status : "User did not exist"}));
+	}
 })
 
 app.post("/Users", (req, res)=> {
